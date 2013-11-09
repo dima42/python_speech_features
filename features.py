@@ -51,7 +51,7 @@ def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     pspec = sigproc.powspec(frames,nfft)
     energy = numpy.sum(pspec,1) # this stores the total energy in each frame
     
-    fb = get_filterbanks(nfilt,nfft,samplerate)
+    fb = get_filterbanks(nfilt,nfft,samplerate, lowfreq, highfreq)
     feat = numpy.dot(pspec,fb.T) # compute the filterbank energies
     return feat,energy
 
@@ -93,7 +93,7 @@ def ssc(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     frames = sigproc.framesig(signal, winlen*samplerate, winstep*samplerate)
     pspec = sigproc.powspec(frames,nfft)
     
-    fb = get_filterbanks(nfilt,nfft,samplerate)
+    fb = get_filterbanks(nfilt,nfft,samplerate, lowfreq, highfreq)
     feat = numpy.dot(pspec,fb.T) # compute the filterbank energies
     R = numpy.tile(numpy.linspace(1,samplerate/2,numpy.size(pspec,1)),(numpy.size(pspec,0),1))
     
@@ -151,8 +151,10 @@ def lifter(cepstra,L=22):
     :param cepstra: the matrix of mel-cepstra, will be numframes * numcep in size.
     :param L: the liftering coefficient to use. Default is 22.
     """
+    lift = 1
     nframes,ncoeff = numpy.shape(cepstra)
     n = numpy.arange(ncoeff)
-    lift = 1+ (L/2)*numpy.sin(numpy.pi*n/L)
+    if L:
+        lift += (L/2)*numpy.sin(numpy.pi*n/L)
     return lift*cepstra
     
